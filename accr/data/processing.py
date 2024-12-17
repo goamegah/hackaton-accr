@@ -8,7 +8,7 @@ class Processing:
     def __init__(self):
         pass
 
-    def preprocessing(self, dataset: pd.DataFrame, method="drop", strategy="mean", fill_value=None, k=5) -> pd.DataFrame:
+    def preprocessing(self, dataset: pd.DataFrame, method="drop", strategy="mean", fill_value=None, k=5, subset=None) -> pd.DataFrame:
         """
         Preprocess the input dataset by either dropping missing values or imputing them.
         :param dataset: the input dataset (DataFrame)
@@ -21,7 +21,7 @@ class Processing:
         preprocess = PreProcessing()
 
         if method == "drop" and isinstance(dataset, pd.DataFrame):
-            return preprocess.dropna(dataset)
+            return preprocess.dropna(dataset, subset=subset)
 
         elif method == "imputation" and isinstance(dataset, pd.DataFrame):
             return preprocess.imputation(dataset, strategy=strategy, fill_value=fill_value)
