@@ -5,22 +5,42 @@ from accr.data.preprocessing import PreProcessing
 
 
 class Processing:
-
     def __init__(self):
         pass
 
-    def preprocessing(self, dataset: object, method="drop") -> pd.DataFrame:
+    def preprocessing(self, dataset: pd.DataFrame, method="drop", strategy="mean", fill_value=None, k=5) -> pd.DataFrame:
         """
         Preprocess the input dataset by either dropping missing values or imputing them.
-        :param dataset: the input dataset
-        :param method: the method to use for preprocessing - either "drop" or "imputation"
-        :return: the preprocessed dataset
+        :param dataset: the input dataset (DataFrame)
+        :param method: the preprocessing method ("drop", "imputation", "knn", "forward_fill", "backward_fill", "random")
+        :param strategy: the imputation strategy for "imputation" method ("mean", "median", "mode", "constant")
+        :param fill_value: the value to use for constant imputation
+        :param k: number of neighbors to use for KNN imputation
+        :return: the preprocessed dataset (DataFrame)
         """
         preprocess = PreProcessing()
+
         if method == "drop" and isinstance(dataset, pd.DataFrame):
             return preprocess.dropna(dataset)
+
         elif method == "imputation" and isinstance(dataset, pd.DataFrame):
-            return preprocess.imputation(dataset)
+            return preprocess.imputation(dataset, strategy=strategy, fill_value=fill_value)
+
+        elif method == "knn" and isinstance(dataset, pd.DataFrame):
+            return preprocess.knn_imputation(dataset, k=k)
+
+        elif method == "forward_fill" and isinstance(dataset, pd.DataFrame):
+            return preprocess.forward_fill(dataset)
+
+        elif method == "backward_fill" and isinstance(dataset, pd.DataFrame):
+            return preprocess.backward_fill(dataset)
+
+        elif method == "random" and isinstance(dataset, pd.DataFrame):
+            return preprocess.random_imputation(dataset)
+
+        else:
+            raise ValueError("Invalid method. Choose from 'drop', 'imputation', 'knn', 'forward_fill', "
+                             "'backward_fill', or 'random'.")
 
     def summary(self, df: pd.DataFrame) -> dict:
         """
@@ -28,8 +48,9 @@ class Processing:
         :param df: the input DataFrame
         :return: a dictionary containing the number of missing values and constant features
         """
-        # find all features with constant values
-        constant_features = [c for c in df.columns if df[c].min() == df[c].max()]
+
+        constant_features = [col for col in df.columns if df[col].nunique() <= 1]
+
         return {
             "Missing Values": df.isna().sum(),
             "Constant Features": constant_features
